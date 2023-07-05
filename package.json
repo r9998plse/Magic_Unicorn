@@ -1,0 +1,11 @@
+{
+  "name": "magic_unicorn",
+  "version": "1.0.0",
+  "description": "魔法獨角獸英語學習樂園",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "YU CHIA LIN",
+  "license": "ISC"
+}
