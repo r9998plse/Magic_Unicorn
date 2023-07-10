@@ -1,6 +1,11 @@
 const express = require('express')
-
 const app = express()
+
+//UserLoginAPI ,
+const fs = require('fs')
+const http = require('http')
+const https = require('https')
+const api_user_login = require('./api/UserLoginAPI/server')
 
 // handlebars setting
 const exphbs = require('express-handlebars') //引入樣板引擎 - handlebars
@@ -29,6 +34,13 @@ mongoose
     console.error('Error connecting to MongoDB:', error)
   })
 
+/*----UserLoginAPI--------------------------------------------------------*/
+
+// Invoke the api_user_login function
+api_user_login(app)
+
+/*----UserLoginAPI--------------------------------------------------------*/
+
 // 引入 body-parser 中間件
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -49,8 +61,17 @@ app.get('/register', (req, res) => {
 })
 // ---------------------------------------------------------------
 
-app.get('/', (req, res) => {
-  // res.render('index', render_index.blank)
+// Start the server
+const httpServer = http.createServer(app)
+httpServer.listen(3000, () => {
+  console.log('HTTP server listening on port 3000')
 })
 
-app.listen(3000)
+// const options = {
+//   key: fs.readFileSync('sslcert/server.key'),
+//   cert: fs.readFileSync('sslcert/server.crt'),
+// }
+// const httpsServer = https.createServer(options, app)
+// httpsServer.listen(443, () => {
+//   console.log('HTTPS server listening on port 443')
+// })
