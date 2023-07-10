@@ -38,6 +38,30 @@ mongoose
 
 // Invoke the api_user_login function
 api_user_login(app)
+app.use('/api', api_user_login)
+
+// 處理會員相關功能
+
+// 引入相關模組和資源
+
+// const loginRouter = require('./routes/login')
+// const registerRouter = require('./routes/register')
+// ...
+
+// 登入功能
+// app.use('/login', loginRouter)
+
+// 註冊功能
+// app.use('/register', registerRouter)
+
+// 修改功能
+// ...
+
+// 查詢功能
+// ...
+
+// 其他會員相關功能
+// ...
 
 /*----UserLoginAPI--------------------------------------------------------*/
 
@@ -48,18 +72,6 @@ app.use(bodyParser.json())
 
 // setting static files
 app.use(express.static('public'))
-
-//路由設定
-
-// 註冊頁面------------------------------------------------------
-const registerRouter = require('./routes/register')
-
-app.use('/api', registerRouter)
-
-app.get('/register', (req, res) => {
-  res.render('register')
-})
-// ---------------------------------------------------------------
 
 // Start the server
 const httpServer = http.createServer(app)
