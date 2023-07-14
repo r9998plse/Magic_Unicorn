@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 
-//UserLoginAPI ,
+//UserLoginAPI
 const fs = require('fs')
 const http = require('http')
 const https = require('https')
@@ -34,6 +34,11 @@ mongoose
     console.error('Error connecting to MongoDB:', error)
   })
 
+// 引入 body-parser 中間件
+const bodyParser = require('body-parser')
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
+
 /*----UserLoginAPI--------------------------------------------------------*/
 
 // Invoke the api_user_login function
@@ -44,15 +49,37 @@ app.use('/api', api_user_login)
 
 // 引入相關模組和資源
 
-// const loginRouter = require('./routes/login')
-// const registerRouter = require('./routes/register')
-// ...
+const loginRouter = require('./routes/login')
+// 添加 successRouter
+const successRouter = require('./routes/success')
+const registerRouter = require('./routes/register')
 
 // 登入功能
-// app.use('/login', loginRouter)
+app.use('/login', loginRouter)
+app.use('/success', successRouter)
+// 登入頁面
+app.get('/login', (req, res) => {
+  res.render('login')
+})
+
+// Login成功後跳轉到首頁，並在控制台印出使用者名稱
+app.post('/auth', (req, res) => {
+  const { username } = req.body
+  console.log('登入成功：', username)
+  res.render('success', { username }) // 將 username 傳遞到 success.handlebars 頁面
+})
 
 // 註冊功能
-// app.use('/register', registerRouter)
+app.use('/users/register', registerRouter)
+
+// Register路由設定
+const usersRoutes = require('./api/UserLoginAPI/users/users.routes')
+usersRoutes.route(app)
+
+// 註冊頁面
+app.get('/register', (req, res) => {
+  res.render('register')
+})
 
 // 修改功能
 // ...
@@ -65,11 +92,6 @@ app.use('/api', api_user_login)
 
 /*----UserLoginAPI--------------------------------------------------------*/
 
-// 引入 body-parser 中間件
-const bodyParser = require('body-parser')
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
-
 // setting static files
 app.use(express.static('public'))
 
@@ -78,6 +100,8 @@ const httpServer = http.createServer(app)
 httpServer.listen(3000, () => {
   console.log('HTTP server listening on port 3000')
 })
+
+//以下為 https 設定
 
 // const options = {
 //   key: fs.readFileSync('sslcert/server.key'),
