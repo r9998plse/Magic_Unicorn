@@ -39,6 +39,16 @@ const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
+const session = require('express-session')
+
+app.use(
+  session({
+    secret: 'admin',
+    resave: false,
+    saveUninitialized: false,
+  })
+)
+
 /*----UserLoginAPI--------------------------------------------------------*/
 
 // Invoke the api_user_login function
@@ -50,23 +60,15 @@ app.use('/api', api_user_login)
 // 引入相關模組和資源
 
 const loginRouter = require('./routes/login')
-// 添加 successRouter
-const successRouter = require('./routes/success')
+
 const registerRouter = require('./routes/register')
 
 // 登入功能
 app.use('/login', loginRouter)
-app.use('/success', successRouter)
+
 // 登入頁面
 app.get('/login', (req, res) => {
   res.render('login')
-})
-
-// Login成功後跳轉到首頁，並在控制台印出使用者名稱
-app.post('/auth', (req, res) => {
-  const { username } = req.body
-  console.log('登入成功：', username)
-  res.render('success', { username }) // 將 username 傳遞到 success.handlebars 頁面
 })
 
 // 註冊功能
