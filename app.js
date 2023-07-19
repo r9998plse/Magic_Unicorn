@@ -60,8 +60,9 @@ app.use('/api', api_user_login)
 // 引入相關模組和資源
 
 const loginRouter = require('./routes/login')
-
 const registerRouter = require('./routes/register')
+
+const passwordResetRouter = require('./routes/passwordReset')
 
 // 登入功能
 app.use('/login', loginRouter)
@@ -72,7 +73,7 @@ app.get('/login', (req, res) => {
 })
 
 // 註冊功能
-app.use('/users/register', registerRouter)
+app.use('/register', registerRouter)
 
 // Register路由設定
 const usersRoutes = require('./api/UserLoginAPI/users/users.routes')
@@ -82,6 +83,9 @@ usersRoutes.route(app)
 app.get('/register', (req, res) => {
   res.render('register')
 })
+
+// 忘記密碼功能
+app.use('/password/reset', passwordResetRouter)
 
 // 修改功能
 // ...
