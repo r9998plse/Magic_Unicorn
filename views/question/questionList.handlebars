@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question List</title>
+</head>
+<body>
+    <h1>Question List</h1>
+
+    <ul>
+        {{#each questions}}
+            <li>
+                <strong>Question Number:</strong> {{id}}<br>
+                <strong>Grade:</strong> {{grade}}<br>
+                <strong>Question Type:</strong> {{category}}<br>
+                <strong>Difficulty:</strong> {{difficulty}}<br>
+                <strong>Tags:</strong> {{tags}}<br>
+                <strong>Question:</strong> {{questionText}}<br>
+                <strong>Answer:</strong> {{correctAnswer}}<br>
+                <strong>Created By:</strong> {{createdBy}}<br>
+                <!-- 顯示 options 欄位 -->
+                <strong>Options:</strong> {{options}}<br>
+            </li>
+            <br>
+        {{/each}}
+
+        
+    </ul>
+</body>
+</html>

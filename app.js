@@ -10,7 +10,14 @@ const api_user_login = require('./api/UserLoginAPI/server')
 // handlebars setting
 const exphbs = require('express-handlebars') //引入樣板引擎 - handlebars
 const helpers = require('handlebars-helpers')()
-const hbs = exphbs.create()
+const hbs = exphbs.create({
+  // 設定允許使用原型方法和屬性
+  allowProtoMethodsByDefault: true,
+  allowProtoPropertiesByDefault: true,
+  // 設定為 false 可以禁用警告訊息
+  allowProtoMethods: true,
+  allowProtoProperties: true,
+})
 
 app.engine('handlebars', hbs.engine)
 app.set('view engine', 'handlebars')
@@ -34,9 +41,6 @@ mongoose
     console.error('Error connecting to MongoDB:', error)
   })
 
-// 引入 Question 模型
-const Question = require('./models/question')
-
 // 引入 body-parser 中間件
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -51,6 +55,34 @@ app.use(
     saveUninitialized: false,
   })
 )
+
+/*----Question DB--------------------------------------------------------*/
+
+// 引入 questionController 函式庫
+const questionController = require('./controllers/questionController')
+
+// 其他的設定和路由處理等...
+
+// 顯示新增題目的表單頁面
+app.get('/question/add', (req, res) => {
+  res.render('question/addQuestion')
+})
+// 處理新增題目的表單提交，使用 questionController 中的 addQuestion 函式
+app.post('/question', questionController.addQuestion)
+
+// 顯示題目清單頁面
+app.get('/question', async (req, res) => {
+  try {
+    // 使用 questionController 的 getAllQuestions 方法取得所有題目
+    const questions = await questionController.getAllQuestions()
+
+    res.render('question/questionList', { questions })
+  } catch (error) {
+    res.status(500).send('Error fetching questions.')
+  }
+})
+
+/*----Question DB--------------------------------------------------------*/
 
 /*----UserLoginAPI--------------------------------------------------------*/
 
