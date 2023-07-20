@@ -34,6 +34,9 @@ mongoose
     console.error('Error connecting to MongoDB:', error)
   })
 
+// 引入 Question 模型
+const Question = require('./models/question')
+
 // 引入 body-parser 中間件
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }))
