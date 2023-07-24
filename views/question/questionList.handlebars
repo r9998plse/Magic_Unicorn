@@ -1,29 +1,85 @@
+<!-- views/questionList.handlebars -->
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Question List</title>
+  <title>Question List</title>
 </head>
 <body>
-    <h1>Question List</h1>
+  <h1>Question List</h1>
 
-    <ul>
-        {{#each questions}}
-            <li>
-                <strong>Question Number:</strong> {{id}}<br>
-                <strong>Grade:</strong> {{grade}}<br>
-                <strong>Question Type:</strong> {{category}}<br>
-                <strong>Difficulty:</strong> {{difficulty}}<br>
-                <strong>Tags:</strong> {{tags}}<br>
-                <strong>Question:</strong> {{questionText}}<br>
-                <strong>Answer:</strong> {{correctAnswer}}<br>
-                <strong>Created By:</strong> {{createdBy}}<br>
-                <!-- 顯示 options 欄位 -->
-                <strong>Options:</strong> {{options}}<br>
-            </li>
-            <br>
-        {{/each}}
+  <!-- 新增題目表單 -->
+  <h2>Add New Question</h2>
+  <form method="POST" action="/question">
+    <label for="number">Number:</label>
+    <input type="number" name="number" required><br>
 
-        
-    </ul>
+    <label for="grade">Grade:</label>
+    <input type="text" name="grade" required><br>
+
+    <label for="category">Category:</label>
+    <input type="text" name="category" required><br>
+
+    <label for="difficulty">Difficulty:</label>
+    <input type="text" name="difficulty" required><br>
+
+    <label for="tags">Tags (comma-separated):</label>
+    <input type="text" name="tags" required><br>
+
+    <label for="questionText">Question Text:</label>
+    <textarea name="questionText" required></textarea><br>
+
+    <label for="correctAnswer">Correct Answer:</label>
+    <input type="text" name="correctAnswer" required><br>
+
+    <label for="options">Options (comma-separated):</label>
+    <input type="text" name="options" required><br>
+
+    <label for="createdBy">Created By:</label>
+    <input type="text" name="createdBy" required><br>
+
+    <input type="submit" value="Add">
+  </form>
+
+  <!-- 題目列表 -->
+  <h2>Question List</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Number</th>
+        <th>Grade</th>
+        <th>Category</th>
+        <th>Difficulty</th>
+        <th>Tags</th>
+        <th>Question Text</th>
+        <th>Correct Answer</th>
+        <th>Options</th>
+        <th>Created By</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each questions}}
+      <tr>
+        <td>{{number}}</td>
+        <td>{{grade}}</td>
+        <td>{{category}}</td>
+        <td>{{difficulty}}</td>
+        <td>{{tags}}</td>
+        <td>{{questionText}}</td>
+        <td>{{correctAnswer}}</td>
+        <td>{{options}}</td>
+        <td>{{createdBy}}</td>
+        <td>
+          <a href="/question/edit/{{number}}">Edit</a>
+          <form method="POST" action="/question/delete/{{number}}">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
 </body>
 </html>
+

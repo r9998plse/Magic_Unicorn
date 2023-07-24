@@ -1,4 +1,4 @@
-// questionController.js
+// controllers/questionController.js
 
 const mongoose = require('mongoose')
 const Question = require('../models/question')
@@ -7,7 +7,7 @@ const Question = require('../models/question')
 const addQuestion = async (req, res) => {
   try {
     const {
-      id,
+      number,
       grade,
       category,
       difficulty,
@@ -19,7 +19,7 @@ const addQuestion = async (req, res) => {
     } = req.body
 
     const newQuestion = new Question({
-      id,
+      number,
       grade,
       category,
       difficulty,
@@ -38,15 +38,75 @@ const addQuestion = async (req, res) => {
 }
 
 // 取得所有題目
-const getAllQuestions = async () => {
+const getAllQuestions = async (req, res) => {
   try {
-    const questions = await Question.find({})
-
+    const questions = await Question.find({}).lean()
     console.log(questions)
-
-    return questions.map((question) => question.toObject())
+    return res.render('question/questionList', { questions })
   } catch (error) {
-    throw new Error('Error fetching questions.')
+    return res.status(500).send('Error fetching questions.')
+  }
+}
+
+// 修改題目
+const updateQuestion = async (req, res) => {
+  try {
+    const { id } = req.params // 將 id 更名為 number
+    const {
+      grade,
+      category,
+      difficulty,
+      tags,
+      questionText,
+      correctAnswer,
+      options,
+      createdBy,
+    } = req.body
+
+    // 找到對應的題目資料並更新
+    await Question.findOneAndUpdate(
+      { number: id }, // 使用新的 number 字段
+      {
+        grade,
+        category,
+        difficulty,
+        tags,
+        questionText,
+        correctAnswer,
+        options,
+        createdBy,
+      }
+    )
+
+    res.redirect('/question')
+  } catch (error) {
+    res.status(500).send('Error updating question.')
+  }
+}
+
+// 刪除題目
+const deleteQuestion = async (req, res) => {
+  try {
+    const { questionId } = req.params
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(questionId)
+
+    if (!isValidObjectId) {
+      throw new Error('Invalid questionId')
+    }
+
+    // 轉換 questionId 成 ObjectId 並進行刪除操作
+    const question = await Question.findByIdAndDelete(
+      mongoose.Types.ObjectId(questionId)
+    )
+
+    if (!question) {
+      throw new Error('Question not found.')
+    }
+
+    res.redirect('/question')
+  } catch (error) {
+    console.log(error)
+    res.status(500).send('Error deleting question.')
   }
 }
 
@@ -54,4 +114,6 @@ const getAllQuestions = async () => {
 module.exports = {
   addQuestion,
   getAllQuestions,
+  updateQuestion,
+  deleteQuestion,
 }

@@ -58,33 +58,46 @@ app.use(
 
 /*----Question DB--------------------------------------------------------*/
 
-// 引入 questionController 函式庫
+// 引入 questionController
 const questionController = require('./controllers/questionController')
 
-// 其他的設定和路由處理等...
-
-// 顯示新增題目的表單頁面
+// 新增題目的表單頁面
 app.get('/question/add', (req, res) => {
-  res.render('question/addQuestion')
+  res.render('addQuestion')
 })
-// 處理新增題目的表單提交，使用 questionController 中的 addQuestion 函式
+
+// 新增題目的表單提交處理
 app.post('/question', questionController.addQuestion)
 
-// 顯示題目清單頁面
-app.get('/question', async (req, res) => {
-  try {
-    // 使用 questionController 的 getAllQuestions 方法取得所有題目
-    const questions = await questionController.getAllQuestions()
+// 顯示所有題目
+app.get('/question', questionController.getAllQuestions)
 
-    res.render('question/questionList', { questions })
+// 編輯題目的表單頁面
+app.get('/question/edit/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const question = await questionController.getQuestionById(id)
+    res.render('editQuestion', { question })
   } catch (error) {
-    res.status(500).send('Error fetching questions.')
+    res.status(500).send('Error fetching question.')
+  }
+})
+
+// 編輯題目的表單提交處理
+app.post('/question/edit/:id', questionController.updateQuestion)
+
+// 刪除題目的處理
+app.post('/question/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    await questionController.deleteQuestion(id)
+    res.redirect('/question')
+  } catch (error) {
+    res.status(500).send('Error deleting question.')
   }
 })
 
 /*----Question DB--------------------------------------------------------*/
-
-/*----UserLoginAPI--------------------------------------------------------*/
 
 // Invoke the api_user_login function
 api_user_login(app)

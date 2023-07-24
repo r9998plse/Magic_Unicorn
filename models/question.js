@@ -3,7 +3,7 @@
 const mongoose = require('mongoose')
 
 const questionSchema = new mongoose.Schema({
-  id: { type: Number, required: true },
+  number: { type: Number, required: true },
   grade: { type: String, required: true },
   category: { type: String, required: true },
   difficulty: { type: String, required: true },
