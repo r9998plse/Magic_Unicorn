@@ -84,18 +84,16 @@ app.get('/question/edit/:id', async (req, res) => {
 })
 
 // 編輯題目的表單提交處理
-app.post('/question/edit/:id', questionController.updateQuestion)
+app.post('/question/edit/:number', questionController.updateQuestion)
 
 // 刪除題目的處理
-app.post('/question/delete/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    await questionController.deleteQuestion(id)
-    res.redirect('/question')
-  } catch (error) {
-    res.status(500).send('Error deleting question.')
-  }
-})
+app.post('/question/delete/:number', questionController.deleteQuestion)
+
+// 取得指定類別、難度的題目
+app.post(
+  '/question/getByCategoryAndDifficulty',
+  questionController.getQuestionsByCategoryAndDifficulty
+)
 
 /*----Question DB--------------------------------------------------------*/
 

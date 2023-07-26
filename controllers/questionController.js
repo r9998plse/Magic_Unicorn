@@ -6,52 +6,75 @@ const Question = require('../models/question')
 // 新增題目到資料庫
 const addQuestion = async (req, res) => {
   try {
-    const {
-      number,
-      grade,
-      category,
-      difficulty,
-      tags,
-      questionText,
-      correctAnswer,
-      createdBy,
-      options,
-    } = req.body
+    let data = req.body
 
-    const newQuestion = new Question({
-      number,
-      grade,
-      category,
-      difficulty,
-      tags,
-      questionText,
-      correctAnswer,
-      createdBy,
-      options,
+    if (!Array.isArray(data)) {
+      data = [data] // 如果不是陣列，將其轉換成陣列
+    }
+
+    // 使用 Promise.all 可以同時處理多筆新增
+    const promises = data.map(async (questionData) => {
+      const {
+        number,
+        grade,
+        category,
+        difficulty,
+        tags,
+        questionText,
+        correctAnswer,
+        createdBy,
+        options,
+      } = questionData
+
+      const newQuestion = new Question({
+        number,
+        grade,
+        category,
+        difficulty,
+        tags,
+        questionText,
+        correctAnswer,
+        createdBy,
+        options,
+      })
+
+      await newQuestion.save()
     })
 
-    await newQuestion.save()
+    await Promise.all(promises)
+
     res.redirect('/question')
   } catch (error) {
-    res.status(500).send('Error adding question.')
+    res.status(500).send('Error adding question(s).')
   }
 }
 
-// 取得所有題目
+//取得所有題目
 const getAllQuestions = async (req, res) => {
   try {
     const questions = await Question.find({}).lean()
-    console.log(questions)
-    return res.render('question/questionList', { questions })
+
+    // 檢查請求的 Accept 頭部是否包含 "application/json"
+    const isJSONRequest = req.accepts('json')
+
+    if (isJSONRequest) {
+      // 如果是 JSON 請求，返回 JSON 格式的數據
+      res.json(questions)
+    } else {
+      // 否則，渲染視圖並返回 HTML 結果
+      res.render('question/questionList', { questions })
+    }
   } catch (error) {
-    return res.status(500).send('Error fetching questions.')
+    res.status(500).send('Error fetching questions.')
   }
 }
+
+//questionController.js
 
 // 修改題目
 const updateQuestion = async (req, res) => {
   try {
-    const { id } = req.params // 將 id 更名為 number
+    const { number } = req.params // 將 id 更名為 number
     const {
       grade,
       category,
@@ -63,9 +86,9 @@ const updateQuestion = async (req, res) => {
       createdBy,
     } = req.body
 
-    // 找到對應的題目資料並更新
-    await Question.findOneAndUpdate(
-      { number: id }, // 使用新的 number 字段
+    // 找到對應的題目資料並更新，並將 new: true 選項設置為返回更新後的資料
+    const updatedQuestion = await Question.findOneAndUpdate(
+      { number }, // 使用新的 number 字段
       {
         grade,
         category,
@@ -75,10 +98,11 @@ const updateQuestion = async (req, res) => {
         correctAnswer,
         options,
         createdBy,
-      }
+      },
+      { new: true } // 設置 new: true 以返回更新後的資料
     )
 
-    res.redirect('/question')
+    res.json(updatedQuestion) // 將更新後的資料以 JSON 格式返回
   } catch (error) {
     res.status(500).send('Error updating question.')
   }
@@ -87,26 +111,66 @@ const updateQuestion = async (req, res) => {
 // 刪除題目
 const deleteQuestion = async (req, res) => {
   try {
-    const { questionId } = req.params
-    const isValidObjectId = mongoose.Types.ObjectId.isValid(questionId)
+    const { number } = req.params
+    const isValidNumber = Number.isInteger(Number(number))
 
-    if (!isValidObjectId) {
-      throw new Error('Invalid questionId')
+    if (!isValidNumber) {
+      return res.status(404).send('Invalid number')
     }
 
-    // 轉換 questionId 成 ObjectId 並進行刪除操作
-    const question = await Question.findByIdAndDelete(
-      mongoose.Types.ObjectId(questionId)
-    )
+    // 轉換 number 成整數後進行刪除操作
+    const deletedQuestion = await Question.findOneAndDelete({
+      number: Number(number),
+    })
 
-    if (!question) {
-      throw new Error('Question not found.')
+    if (!deletedQuestion) {
+      return res.status(404).send('Question not found.')
     }
+
+    console.log(deletedQuestion) // 檢查被刪除的 question 物件的詳細內容
 
     res.redirect('/question')
   } catch (error) {
     console.log(error)
     res.status(500).send('Error deleting question.')
+  }
+}
+
+// 取得指定類別、難度的題目
+const getQuestionsByCategoryAndDifficulty = async (req, res) => {
+  try {
+    const { category, difficulty, count } = req.body // 修改為使用 req.body
+
+    // 檢查輸入的 count 是否為合法數字
+    const numCount = parseInt(count, 10)
+    if (isNaN(numCount) || numCount <= 0) {
+      return res.status(400).send('Invalid count')
+    }
+
+    // 使用 find 方法查詢符合條件的題目
+    const questions = await Question.find({ category, difficulty })
+      .limit(numCount) // 限制回傳的題數
+      .select('questionText options correctAnswer') // 只選取指定欄位
+      .lean() // 將查詢結果轉換為純 JavaScript 物件
+
+    // 檢查是否有符合條件的題目
+    if (questions.length === 0) {
+      return res.status(404).send('No questions found.')
+    }
+
+    // 將回傳的資料包裝成規定的格式
+    const responseData = {
+      questions: questions.map((question) => ({
+        questionText: question.questionText,
+        options: question.options,
+        correctAnswer: question.correctAnswer,
+      })),
+    }
+
+    res.json(responseData)
+  } catch (error) {
+    console.log(error)
+    res.status(500).send('Error fetching questions.')
   }
 }
 
@@ -116,4 +180,5 @@ module.exports = {
   getAllQuestions,
   updateQuestion,
   deleteQuestion,
+  getQuestionsByCategoryAndDifficulty,
 }
