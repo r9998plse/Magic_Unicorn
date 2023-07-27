@@ -108,31 +108,40 @@ const updateQuestion = async (req, res) => {
   }
 }
 
-// 刪除題目
 const deleteQuestion = async (req, res) => {
   try {
-    const { number } = req.params
-    const isValidNumber = Number.isInteger(Number(number))
+    const { numbers } = req.body
 
-    if (!isValidNumber) {
-      return res.status(404).send('Invalid number')
+    // 檢查 numbers 是否為陣列
+    if (!Array.isArray(numbers)) {
+      return res
+        .status(400)
+        .send('Invalid request. "numbers" must be an array.')
     }
 
-    // 轉換 number 成整數後進行刪除操作
-    const deletedQuestion = await Question.findOneAndDelete({
-      number: Number(number),
+    // 檢查 numbers 是否都為有效的數字
+    if (!numbers.every((num) => Number.isInteger(num))) {
+      return res
+        .status(400)
+        .send('Invalid request. All elements in "numbers" must be integers.')
+    }
+
+    // 將 numbers 轉換為整數後進行刪除操作
+    const deletedQuestions = await Question.deleteMany({
+      number: { $in: numbers },
     })
 
-    if (!deletedQuestion) {
-      return res.status(404).send('Question not found.')
+    if (deletedQuestions.deletedCount === 0) {
+      return res.status(404).send('No matching question found.')
     }
 
-    console.log(deletedQuestion) // 檢查被刪除的 question 物件的詳細內容
-
-    res.redirect('/question')
+    res.json({
+      message: 'Questions deleted successfully.',
+      deletedCount: deletedQuestions.deletedCount,
+    })
   } catch (error) {
     console.log(error)
-    res.status(500).send('Error deleting question.')
+    res.status(500).send('Error deleting questions.')
   }
 }
 

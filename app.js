@@ -84,10 +84,10 @@ app.get('/question/edit/:id', async (req, res) => {
 })
 
 // 編輯題目的表單提交處理
-app.post('/question/edit/:number', questionController.updateQuestion)
+app.put('/question/edit/:number', questionController.updateQuestion)
 
-// 刪除題目的處理
-app.post('/question/delete/:number', questionController.deleteQuestion)
+// 刪除題目 (單筆或多筆)
+app.delete('/question', questionController.deleteQuestion)
 
 // 取得指定類別、難度的題目
 app.post(
@@ -96,6 +96,41 @@ app.post(
 )
 
 /*----Question DB--------------------------------------------------------*/
+
+/*----VocabularyDB--------------------------------------------------------*/
+
+// 引入 vocabularyController
+const vocabularyController = require('./controllers/vocabularyController')
+
+// 新增單字的表單頁面
+app.get('/vocabulary/add', (req, res) => {
+  res.render('addVocabulary')
+})
+
+// 新增單字的表單提交處理
+app.post('/vocabulary', vocabularyController.addVocabulary)
+
+// 顯示所有單字
+app.get('/vocabulary', vocabularyController.getAllVocabulary)
+
+// 更新單字的表單頁面
+app.get('/vocabulary/edit/:number', async (req, res) => {
+  try {
+    const { number } = req.params
+    const vocabulary = await vocabularyController.getVocabularyByNumber(number)
+    res.render('editVocabulary', { vocabulary })
+  } catch (error) {
+    res.status(500).send('Error fetching vocabulary.')
+  }
+})
+
+// 更新單字的表單提交處理
+app.put('/vocabulary/:number', vocabularyController.updateVocabulary)
+
+// 刪除單字 (單筆或多筆)
+app.delete('/vocabulary', vocabularyController.deleteVocabulary)
+
+/*----VocabularyDB--------------------------------------------------------*/
 
 // Invoke the api_user_login function
 api_user_login(app)
