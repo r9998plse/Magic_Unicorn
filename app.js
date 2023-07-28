@@ -130,6 +130,9 @@ app.put('/vocabulary/:number', vocabularyController.updateVocabulary)
 // 刪除單字 (單筆或多筆)
 app.delete('/vocabulary', vocabularyController.deleteVocabulary)
 
+// 更新所有資料的版本號
+app.put('/vocabulary/updateAllVersions', vocabularyController.updateAllVersions)
+
 /*----VocabularyDB--------------------------------------------------------*/
 
 // Invoke the api_user_login function

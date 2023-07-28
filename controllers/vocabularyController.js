@@ -68,6 +68,7 @@ const updateVocabulary = async (req, res) => {
   }
 }
 
+//刪除單字
 const deleteVocabulary = async (req, res) => {
   try {
     const { numbers } = req.body
@@ -105,9 +106,22 @@ const deleteVocabulary = async (req, res) => {
   }
 }
 
-module.exports = {
-  // 其他 CRUD 方法...
-  deleteVocabulary,
+//更新版本號
+const updateAllVersions = async (req, res) => {
+  try {
+    const latestVersion = await Vocabulary.findLatestVersion()
+    const updatedVocabularies = await Vocabulary.updateMany(
+      {},
+      { version: latestVersion }
+    )
+
+    res.json({
+      message: 'All versions updated successfully.',
+      updatedCount: updatedVocabularies.nModified,
+    })
+  } catch (error) {
+    res.status(500).send('Error updating versions.')
+  }
 }
 
 // 導出 CRUD 方法
@@ -116,4 +130,5 @@ module.exports = {
   getAllVocabulary,
   updateVocabulary,
   deleteVocabulary,
+  updateAllVersions,
 }

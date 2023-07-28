@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require('mongoose')
+const { Schema } = mongoose
 
 const vocabularySchema = new Schema({
   number: {
@@ -29,8 +29,31 @@ const vocabularySchema = new Schema({
     type: String,
     required: true,
   },
-});
+  version: {
+    type: String,
+    required: true,
+    default: 'Ver.0',
+  },
+})
 
-const Vocabulary = mongoose.model('Vocabulary', vocabularySchema);
+// 新增靜態方法 findLatestVersion
+vocabularySchema.statics.findLatestVersion = async function () {
+  try {
+    const latestVocabulary = await this.findOne().sort({ version: -1 }).exec()
 
-module.exports = Vocabulary;
+    if (latestVocabulary) {
+      const lastVersion = latestVocabulary.version
+      const versionNumber = parseInt(lastVersion.split('.')[1])
+      const newVersion = `Ver.${versionNumber + 1}`
+      return newVersion
+    } else {
+      return 'Ver.0'
+    }
+  } catch (error) {
+    throw new Error('Error finding latest version.')
+  }
+}
+
+const Vocabulary = mongoose.model('Vocabulary', vocabularySchema)
+
+module.exports = Vocabulary
