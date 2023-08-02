@@ -110,6 +110,7 @@ const deleteVocabulary = async (req, res) => {
 const updateAllVersions = async (req, res) => {
   try {
     const latestVersion = await Vocabulary.findLatestVersion()
+    console.log('Latest version:', latestVersion) // 添加除錯日誌
     const updatedVocabularies = await Vocabulary.updateMany(
       {},
       { version: latestVersion }
@@ -120,6 +121,7 @@ const updateAllVersions = async (req, res) => {
       updatedCount: updatedVocabularies.nModified,
     })
   } catch (error) {
+    console.error('Error updating versions:', error) // 添加除錯日誌
     res.status(500).send('Error updating versions.')
   }
 }

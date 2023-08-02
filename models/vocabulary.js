@@ -36,23 +36,26 @@ const vocabularySchema = new Schema({
   },
 })
 
-// 新增靜態方法 findLatestVersion
+// 添加靜態方法 findLatestVersion 到 Vocabulary 模型
 vocabularySchema.statics.findLatestVersion = async function () {
   try {
-    const latestVocabulary = await this.findOne().sort({ version: -1 }).exec()
-
-    if (latestVocabulary) {
-      const lastVersion = latestVocabulary.version
-      const versionNumber = parseInt(lastVersion.split('.')[1])
-      const newVersion = `Ver.${versionNumber + 1}`
-      return newVersion
-    } else {
-      return 'Ver.0'
-    }
+    const latestVocabulary = await this.findOne({}, 'version')
+      .sort({ version: -1 })
+      .lean()
+    return latestVocabulary ? latestVocabulary.version : 'Ver.0'
   } catch (error) {
-    throw new Error('Error finding latest version.')
+    console.error('Error finding latest version:', error)
+    throw error
   }
 }
+
+// 設置 version 屬性的預設值為 "Ver.0"
+vocabularySchema.pre('save', function (next) {
+  if (!this.version) {
+    this.version = 'Ver.0'
+  }
+  next()
+})
 
 const Vocabulary = mongoose.model('Vocabulary', vocabularySchema)
 

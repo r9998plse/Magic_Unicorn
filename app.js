@@ -25,7 +25,7 @@ app.set('view engine', 'handlebars')
 // 資料庫連接
 const mongoose = require('mongoose')
 const mongoURI =
-  'mongodb+srv://blank100071:Vurlqhkg9P9qFwxL@mytestmongodb.akhlroc.mongodb.net/?retryWrites=true&w=majority'
+  'mongodb+srv://MagicUniorn:zJ9h8ATeYtixGy4L@magicunicorn.zdqkjq3.mongodb.net/'
 const dbName = 'MAGIC_UNICORN' // 設定要使用的 database 名稱
 
 mongoose
