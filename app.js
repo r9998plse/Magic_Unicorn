@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const port = process.env.PORT || 3000 // 使用預設端口3000，或者讀取環境變數中的端口
 
 //UserLoginAPI
 const fs = require('fs')
@@ -187,8 +188,8 @@ app.use(express.static('public'))
 
 // Start the server
 const httpServer = http.createServer(app)
-httpServer.listen(3000, () => {
-  console.log('HTTP server listening on port 3000')
+httpServer.listen(port, () => {
+  console.log('HTTP server listening on port ', port)
 })
 
 //以下為 https 設定
