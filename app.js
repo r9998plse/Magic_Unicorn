@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000 // 使用預設端口3000，或者讀取環境變數中的端口
+const host = '0.0.0.0' // 將監聽主機改為 '0.0.0.0'
 
 //UserLoginAPI
 const fs = require('fs')
@@ -188,7 +189,7 @@ app.use(express.static('public'))
 
 // Start the server
 const httpServer = http.createServer(app)
-httpServer.listen(port, () => {
+httpServer.listen(port, host, () => {
   console.log('HTTP server listening on port ', port)
 })
 
