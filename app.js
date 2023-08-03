@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = process.env.PORT || 3000 // 使用預設端口3000，或者讀取環境變數中的端口
+const port = process.env.PORT || 3001 // 使用自訂端口，或者讀取環境變數中的端口
 const host = '0.0.0.0' // 將監聽主機改為 '0.0.0.0'
 
 //UserLoginAPI
