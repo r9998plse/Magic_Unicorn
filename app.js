@@ -3,12 +3,6 @@ const app = express()
 const port = process.env.PORT || 3001 // 使用自訂端口，或者讀取環境變數中的端口
 const host = '0.0.0.0' // 監聽主機
 
-//UserLoginAPI
-const fs = require('fs')
-const http = require('http')
-const https = require('https')
-const api_user_login = require('./api/UserLoginAPI/server')
-
 // handlebars setting
 const exphbs = require('express-handlebars') //引入樣板引擎 - handlebars
 const helpers = require('handlebars-helpers')()
@@ -43,10 +37,40 @@ mongoose
     console.error('Error connecting to MongoDB:', error)
   })
 
+/*----UserLoginAPI--------------------------------------------------------*/
+
+const fs = require('fs')
+const http = require('http')
+const https = require('https')
+const config = require('./api/UserLoginAPI/config.js')
+const Limiter = require('./api/UserLoginAPI/tools/limiter.tool')
+
+//Limiter to prevent attacks
+Limiter.limit(app)
+
+//Headers
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Credentials', 'true')
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE')
+  res.header('Access-Control-Expose-Headers', 'Content-Length')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Accept, Authorization, Content-Type, X-Requested-With, Range'
+  )
+  if (req.method === 'OPTIONS') {
+    return res.send(200)
+  } else {
+    return next()
+  }
+})
+
 // 引入 body-parser 中間件
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
+//Parse JSON body
+app.use(express.json({ limit: '100kb' }))
 
 const session = require('express-session')
 
@@ -57,6 +81,38 @@ app.use(
     saveUninitialized: false,
   })
 )
+
+//Log request
+app.use((req, res, next) => {
+  var today = new Date()
+  var date =
+    today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
+  var time =
+    today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds()
+  var date_tag = '[' + date + ' ' + time + ']'
+  console.log(date_tag + ' ' + req.method + ' ' + req.originalUrl)
+  next()
+})
+
+//Route root DIR
+app.get('/', function (req, res) {
+  res.status(200).send(config.api_title + ' ' + config.version)
+})
+
+//Public folder
+app.use('/', express.static('public'))
+
+//Routing
+const AuthorizationRouter = require('./api/UserLoginAPI/authorization/auth.routes')
+AuthorizationRouter.route(app)
+
+const UsersRouter = require('./api/UserLoginAPI/users/users.routes')
+UsersRouter.route(app)
+
+const ActivityRouter = require('./api/UserLoginAPI/activity/activity.routes')
+ActivityRouter.route(app)
+
+/*----UserLoginAPI--------------------------------------------------------*/
 
 /*----Question DB--------------------------------------------------------*/
 
@@ -137,69 +193,24 @@ app.put('/vocabulary/updateAllVersions', vocabularyController.updateAllVersions)
 
 /*----VocabularyDB--------------------------------------------------------*/
 
-// Invoke the api_user_login function
-api_user_login(app)
-app.use('/api', api_user_login)
-
-// 處理會員相關功能
-
-// 引入相關模組和資源
-
-const loginRouter = require('./routes/login')
-const registerRouter = require('./routes/register')
-
-const passwordResetRouter = require('./routes/passwordReset')
-
-// 登入功能
-app.use('/login', loginRouter)
-
-// 登入頁面
-app.get('/login', (req, res) => {
-  res.render('login')
-})
-
-// 註冊功能
-app.use('/register', registerRouter)
-
-// Register路由設定
-const usersRoutes = require('./api/UserLoginAPI/users/users.routes')
-usersRoutes.route(app)
-
-// 註冊頁面
-app.get('/register', (req, res) => {
-  res.render('register')
-})
-
-// 忘記密碼功能
-app.use('/password/reset', passwordResetRouter)
-
-// 修改功能
-// ...
-
-// 查詢功能
-// ...
-
-// 其他會員相關功能
-// ...
-
-/*----UserLoginAPI--------------------------------------------------------*/
-
-// setting static files
-app.use(express.static('public'))
-
 // Start the server
 const httpServer = http.createServer(app)
 httpServer.listen(port, host, () => {
   console.log('HTTP server listening on port ', port)
 })
 
-//以下為 https 設定
+//HTTPS
+if (config.allow_https && fs.existsSync(config.https_key)) {
+  var privateKey = fs.readFileSync(config.https_key, 'utf8')
+  var certificate = fs.readFileSync(config.https_cert, 'utf8')
+  var cert_authority = fs.readFileSync(config.https_ca, 'utf8')
+  var credentials = { key: privateKey, cert: certificate, ca: cert_authority }
+  var httpsServer = https.createServer(credentials, app)
+  httpsServer.listen(config.port_https, function () {
+    console.log('HTTPS server listening on port ', config.port_https)
+  })
+}
 
-// const options = {
-//   key: fs.readFileSync('sslcert/server.key'),
-//   cert: fs.readFileSync('sslcert/server.crt'),
-// }
-// const httpsServer = https.createServer(options, app)
-// httpsServer.listen(443, () => {
-//   console.log('HTTPS server listening on port 443')
-// })
+//Start jobs
+const Jobs = require('./api/UserLoginAPI/jobs/jobs.js')
+Jobs.InitJobs()
