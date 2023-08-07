@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "魔法獨角獸英語樂園",
   "engines": {
-    "node": "14.17.0"
+    "node": "16.18.0"
   },
   "main": "app.js",
   "scripts": {
